@@ -10,13 +10,14 @@ import java.time.LocalDateTime;
 import java.util.Objects;
 
 @Entity
-public class RNC {
+@Table(name = "rnc")
+public class Rnc {
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id_rnc")
     private Long idRnc;
 
-    @Column(name="numero_rnc",nullable = false)
+    @Column(name="numero_rnc",nullable = false,unique = true)
     private Long numeroRnc;
 
     @Column(nullable = false)
@@ -28,65 +29,54 @@ public class RNC {
     @Column(name="data_modificacao",nullable = false)
     private LocalDateTime dataModificacao;
 
-    @Column(name = "data_previsao_fechamento",nullable = false)
-    private LocalDateTime dataPrevisaoFechamento;
+    @Column(name = "data_previsao_finalizacao",nullable = false)
+    private LocalDate dataPrevisaoFinalizacao;
 
-    @Column(name = "data_fechamento",nullable = false)
-    private LocalDateTime dataFechamento;
-
-    @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
-    private Status status;
+    @Column(name = "data_finalizacao")
+    private LocalDateTime dataFinalizacao;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private Situacao situacao;
 
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private Status status;
 
     @Column(name="nivel_urgencia",nullable = false)
     @Enumerated(EnumType.STRING)
     private NivelUrgencia nivelUrgencia;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name="tipo_id", nullable = false)
     private Tipo tipo;
 
-    @ManyToOne
-    @JoinColumn(name = "usuario_id")
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "usuario_id",nullable = false)
     private Usuario usuario;
 
-    public RNC() {
+    @PrePersist
+    public void prePersist(){
+        dataCriacao = LocalDateTime.now();
+        dataModificacao = LocalDateTime.now();
+        situacao = Situacao.ABERTO;
+        status = Status.ATIVO;
     }
 
-    public RNC(Long idRnc, Long numeroRnc, String descricao, LocalDateTime dataCriacao, LocalDateTime dataModificacao, LocalDateTime dataPrevisaoFechamento, LocalDateTime dataFechamento, Status status, Situacao situacao, NivelUrgencia nivelUrgencia, Tipo tipo, Usuario usuario) {
-        this.idRnc = idRnc;
-        this.numeroRnc = numeroRnc;
-        this.descricao = descricao;
-        this.dataCriacao = dataCriacao;
-        this.dataModificacao = dataModificacao;
-        this.dataPrevisaoFechamento = dataPrevisaoFechamento;
-        this.dataFechamento = dataFechamento;
-        this.status = status;
-        this.situacao = situacao;
-        this.nivelUrgencia = nivelUrgencia;
-        this.tipo = tipo;
-        this.usuario = usuario;
+    @PreUpdate
+    public void preUpdate() {
+        dataModificacao = LocalDateTime.now();
+    }
+
+    public Rnc() {
     }
 
     public Long getIdRnc() {
         return idRnc;
     }
 
-    public void setIdRnc(Long idRnc) {
-        this.idRnc = idRnc;
-    }
-
     public Long getNumeroRnc() {
         return numeroRnc;
-    }
-
-    public void setNumeroRnc(Long numeroRnc) {
-        this.numeroRnc = numeroRnc;
     }
 
     public String getDescricao() {
@@ -101,10 +91,6 @@ public class RNC {
         return dataCriacao;
     }
 
-    public void setDataCriacao(LocalDateTime dataCriacao) {
-        this.dataCriacao = dataCriacao;
-    }
-
     public LocalDateTime getDataModificacao() {
         return dataModificacao;
     }
@@ -113,28 +99,24 @@ public class RNC {
         this.dataModificacao = dataModificacao;
     }
 
-    public LocalDateTime getDataPrevisaoFechamento() {
-        return dataPrevisaoFechamento;
+    public LocalDate getDataPrevisaoFinalizacao() {
+        return dataPrevisaoFinalizacao;
     }
 
-    public void setDataPrevisaoFechamento(LocalDateTime dataPrevisaoFechamento) {
-        this.dataPrevisaoFechamento = dataPrevisaoFechamento;
+    public void setUsuario(Usuario usuario) {
+        this.usuario = usuario;
     }
 
-    public LocalDateTime getDataFechamento() {
-        return dataFechamento;
+    public void setDataPrevisaoFinalizacao(LocalDate dataPrevisaoFinalizacao) {
+        this.dataPrevisaoFinalizacao = dataPrevisaoFinalizacao;
     }
 
-    public void setDataFechamento(LocalDateTime dataFechamento) {
-        this.dataFechamento = dataFechamento;
+    public LocalDateTime getDataFinalizacao() {
+        return dataFinalizacao;
     }
 
-    public Status getStatus() {
-        return status;
-    }
-
-    public void setStatus(Status status) {
-        this.status = status;
+    public void setDataFinalizacao(LocalDateTime dataFinalizacao) {
+        this.dataFinalizacao = dataFinalizacao;
     }
 
     public Situacao getSituacao() {
@@ -143,6 +125,14 @@ public class RNC {
 
     public void setSituacao(Situacao situacao) {
         this.situacao = situacao;
+    }
+
+    public Status getStatus() {
+        return status;
+    }
+
+    public void setStatus(Status status) {
+        this.status = status;
     }
 
     public NivelUrgencia getNivelUrgencia() {
@@ -165,10 +155,6 @@ public class RNC {
         return usuario;
     }
 
-    public void setUsuario(Usuario usuario) {
-        this.usuario = usuario;
-    }
-
     @Override
     public String toString() {
         return "RNC{" +
@@ -177,19 +163,18 @@ public class RNC {
                 ", descricao='" + descricao + '\'' +
                 ", dataCriacao=" + dataCriacao +
                 ", dataModificacao=" + dataModificacao +
-                ", dataPrevisaoFechamento=" + dataPrevisaoFechamento +
-                ", dataFechamento=" + dataFechamento +
-                ", status=" + status +
+                ", dataPrevisaoFinalizacao=" + dataPrevisaoFinalizacao +
+                ", dataFinalizacao=" + dataFinalizacao +
                 ", situacao=" + situacao +
+                ", status=" + status +
                 ", nivelUrgencia=" + nivelUrgencia +
-                ", tipo=" + tipo +
-                ", usuario=" + usuario +
                 '}';
     }
 
     @Override
     public boolean equals(Object o) {
-        if (!(o instanceof RNC rnc)) return false;
+        if(this == o) return true;
+        if (!(o instanceof Rnc rnc)) return false;
         return Objects.equals(idRnc, rnc.idRnc);
     }
 
